@@ -22,3 +22,9 @@ It then calculates the proportion of *both* values for the feature, within
 
 I (MB) am the copyright holder, and release this code under the 2-clause BSD
 license.
+
+Test with:
+
+```
+PYTHONPATH=$PWD pytest coincidence
+```

@@ -1,56 +1,42 @@
-""" Series ids and Jaccard coefficients
+""" Tests for cooincidnce functions
 """
 
 import numpy as np
 
+from coincidence import link_table, jaccard_table, calc_ratios
 
-def link_table(series_ids):
-    """ Make shape (n, n) array `arr` of link dummy indicators
 
-    `series_ids` contains values that are unique for a particular linked
-    series.  Therefore, two rows with the same value in `series_ids` are
-    linked.
-
-    A 1 in ``arr[i, j]`` means that case ``i`` has a link to case ``j``.
-    """
-    series_ids = np.array(series_ids, dtype=float)
-    n = len(series_ids)
+def equal_to(col):
+    # Slow version for link_table calculation
+    col = np.array(col, dtype=float)
+    n = len(col)
     arr = np.zeros((n, n))
-    col, row = series_ids[:, None], series_ids[None, :]
-    arr[:, :] = col == row
-    arr[np.isnan(col + row)] = np.nan
+    for i in range(n):
+        for j in range(n):
+            a, b = col[i], col[j]
+            if np.isnan(a) or np.isnan(b):
+                arr[i, j] = np.nan
+            else:
+                arr[i, j] = a == b
     return arr
 
 
-def jaccard_table(col):
-    """ Make shape (n, n) array `arr` of 1, 1 coincidences in `col`.
-
-    A 1 in ``arr[i, j]`` means that both case ``i`` and ``j`` have a 1 in the
-    corresponding position in `col`.
-
-    See :func:`jaccard_table_slow` for a version that might be easier to read.
-    """
-    col = np.array(col, dtype=float)[:, None]  # Row
-    res = col * col.T
-    # If either value is 0, 0 overrides nan
-    is_zero = col == 0
-    res[is_zero | is_zero.T] = 0
-    return res
-
-
-def calc_ratios(link_pairs, jacc_pairs):
-    not_nan = ~np.isnan(link_pairs + jacc_pairs)
-    link_pairs, jacc_pairs = link_pairs[not_nan], jacc_pairs[not_nan]
-    n_links = np.sum(link_pairs)
-    n_jaccs = np.sum(jacc_pairs)
-    # Multiply the links and Jaccards, and sum them to get the number
-    # of links that are also Jaccards.
-    n_jl = np.sum(link_pairs * jacc_pairs)
-    # Linked Jaccards divided by all links.
-    jl_rat = n_jl / n_links
-    # Non-linked Jaccards divided by all non-links.
-    jnl_rat = (n_jaccs - n_jl) / (len(link_pairs) - n_links)
-    return jl_rat, jnl_rat
+def both_1(col):
+    # Slow version for jaccard_table calculation
+    # Slow calculation for illustration.
+    col = np.array(col, dtype=float)
+    n = len(col)
+    arr = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            a, b = col[i], col[j]
+            if 0 in (a, b):
+                arr[i, j] = 0
+            elif np.isnan(a + b):
+                arr[i, j] = np.nan
+            else:
+                arr[i, j] = 1
+    return arr
 
 
 def test_jaccard():
