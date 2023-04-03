@@ -1,7 +1,5 @@
-""" Jaccard coefficients
+""" Series ids and Jaccard coefficients
 """
-
-import operator
 
 import numpy as np
 
@@ -38,21 +36,6 @@ def jaccard_table(col):
     is_zero = col == 0
     res[is_zero | is_zero.T] = 0
     return res
-
-
-def jaccard_table_slow(col):
-    # Slower calculation, to make more obvious what it's doing.
-    col = np.array(col, dtype=float)
-    n = len(col)
-    # Replicate the column n times.
-    arr = np.repeat(col[:, None], n, axis=1)
-    # Set all columns to 0 with corresponding 0 in input column.
-    arr[:, col == 0] = 0
-    return arr
-
-
-def funcand(a, b):
-    return a and b
 
 
 def equal_to(col):
@@ -130,7 +113,6 @@ def test_jaccard():
                    0, 0, 1, 0, 1, 1,
                    0, 0, 0, 0, 0, 0, 0])
     # Check slow version gives same answer.
-    assert np.all(jacc_pairs == jaccard_table_slow(feature)[inds])
     assert np.all(jacc_pairs == both_1(feature)[inds])
     jl_r, jnl_r = calc_ratios(link_pairs, jacc_pairs)
     assert np.isclose(jl_r, 3 / 4)
@@ -197,13 +179,7 @@ def test_jaccard2():
                    0, 0, 0,
                    1, 1, 0, 0])
     # Check slow version gives same answer.
-    assert np.all(jacc_pairs == jaccard_table_slow(feature)[inds])
     assert np.all(jacc_pairs == both_1(feature)[inds])
     jl_r, jnl_r = calc_ratios(link_pairs, jacc_pairs)
     assert np.isclose(jl_r, 1 / 3)
     assert np.isclose(jnl_r, 2 / 7)
-
-
-# Make sure test passes first.
-test_jaccard()
-test_jaccard2()
